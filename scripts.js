@@ -87,6 +87,7 @@ navigator.getUserMedia = ( navigator.getUserMedia ||
                        navigator.webkitGetUserMedia ||
                        navigator.mozGetUserMedia ||
                        navigator.msGetUserMedia);
+const video = document.getElementById("video");
 
 
 Promise.all([
@@ -95,10 +96,27 @@ Promise.all([
   faceapi.nets.faceRecognitionNet.loadFromUri("/models"),
   faceapi.nets.faceExpressionNet.loadFromUri("/models"),
   faceapi.nets.ageGenderNet.loadFromUri("/models")
-]).then(startVideo);
+]).then(() => {
+      if (navigator.mediaDevices.getUserMedia) {
+        startVideo(document.getElementById("video"));
+        navigator.mediaDevices
+          .getUserMedia({ audio: false, video: true })
+          .then(function (stream) {
+            //Display the video stream in the video object
+            video.srcObject = stream;
+            //Play the video stream
+            video.play();
+            setIsLoaded(true);
+            console.log("Video : " + video);
+            addEvent();
+          })
+          .catch(function (e) {
+            console.log(e.name + ": " + e.message);
+          });
+      }});
 
 function startVideo() {
-  navigator.getUserMedia(
+  navigator.mediaDevices.getUserMedia(
     { video: {} },
     stream => (video.srcObject = stream),
     err => console.error(err)
